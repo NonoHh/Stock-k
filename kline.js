@@ -44,9 +44,9 @@ var Kline = (function (stock_id) {
                 for (let i = 0; i < rawData.length; i++) {
                     categoryData.push(rawData[i].splice(0, 1)[0]);
                     values.push(rawData[i]);
-                    prices.push(rawData[i][1]);
-                    amplitude.push(rawData[i][2]);
-                    volume.push(rawData[i][3]);
+                    prices.push(rawData[i][0]);
+                    amplitude.push(rawData[i][1]);
+                    volume.push(rawData[i][2]);
                 }
                 const maxAmplitude = getAmplitude(prices, basePrice);
                 const minPrice = Number(basePrice - basePrice * maxAmplitude).toFixed(2);
@@ -717,6 +717,7 @@ var Kline = (function (stock_id) {
                             myChangeDayK: {
                                 show: curType == 'day' ? false : true,
                                 title: '日K线',
+                                itemSize: 200,
                                 icon: 'image://asset/ico/day.svg',
                                 onclick: function () {
                                     flushHis('day');
@@ -752,34 +753,44 @@ var Kline = (function (stock_id) {
             }
 
             function flushRt() {
-                var url = 'http://127.0.0.1:8088/get_rt$' + stockId;
-                var requestRt = new XMLHttpRequest();
-                requestRt.onreadystatechange = function () {
-                    if (requestRt.readyState == 4 && requestRt.status == 200) {
-                        const queryResult = JSON.parse(requestRt.responseText);
-                        dataRt = handleRtData(queryResult.data, queryResult.closePrice);
-                        flushOptionRt();
-                        myChart.setOption(optionRt, true);
+                var vm = new Vue({
+                    methods: {
+                        get: function () {
+                            this.$http.get('http://127.0.0.1:8088/get_rt$', {
+                                stock_id: stockId
+                            }).then(function (res) {
+                                dataRt = handleRtData(res.body.data, res.body.basePrice);
+                                flushOptionRt();
+                                myChart.setOption(optionRt, true);
+                                curType = 'rt';
+                            }, function () {
+                                console.log('请求失败处理');
+                            });
+                        }
                     }
-                };
-                requestRt.open('GET', url, true);
-                requestRt.send();
-                curType = 'rt';
+                });
+                vm.get();
             }
 
             function flushHis(interval) {
-                var url = 'http://127.0.0.1:8088/get_his$' + stockId + '$' + interval;
-                var requestHis = new XMLHttpRequest();
-                requestHis.onreadystatechange = function () {
-                    if (requestHis.readyState == 4 && requestHis.status == 200) {
-                        dataHis = handleHistoryData(JSON.parse(requestHis.responseText));
-                        flushOptionHis();
-                        myChart.setOption(optionHis, true);
+                var vm = new Vue({
+                    methods: {
+                        get: function () {
+                            this.$http.get('http://127.0.0.1:8088/get_his', {
+                                stock_id: stockId,
+                                interval: interval
+                            }).then(function (res) {
+                                dataHis = handleHistoryData(res.body.data);
+                                flushOptionHis();
+                                myChart.setOption(optionHis, true);
+                                curType = interval;
+                            }, function () {
+                                console.log('请求失败处理');
+                            });
+                        }
                     }
-                };
-                requestHis.open('GET', url, true);
-                requestHis.send();
-                curType = interval;
+                });
+                vm.get();
             }
 
             this.show = function () {
@@ -788,7 +799,6 @@ var Kline = (function (stock_id) {
 
             this.flushData = function () {
                 if (curType == 'rt') {
-                    flushRt();
                 }
                 console.log(Date.now());
             }

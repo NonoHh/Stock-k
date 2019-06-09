@@ -4,7 +4,9 @@
 <head>
     <meta charset="utf-8">
     <title>ECharts</title>
-    <script src="lib/echarts.min.js"></script>
+    <script src="js/echarts.min.js"></script>
+    <script src="js/vue.js"></script>
+    <script src="js/vue-resource.js"></script>
     <script src="kline.js"></script>
 </head>
 
@@ -13,7 +15,7 @@
 <script type="text/javascript">
     var kline = new Kline('123456');
     kline.show();
-    self.setInterval("kline.flushData()", 5000);
+    // self.setInterval("kline.flushData()", 5000);
 </script>
 </body>
 
