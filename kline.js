@@ -314,12 +314,12 @@ const Kline = (function (stock_id) {
                                 color: function (params) {
                                     let colorList;
                                     if (params.data >= 0) {
-                                        colorList = downColor;
-                                    } else {
                                         colorList = upColor;
+                                    } else {
+                                        colorList = downColor;
                                     }
                                     return colorList;
-                                },
+                                }
                             }
                         }
                     }, {
@@ -780,9 +780,7 @@ const Kline = (function (stock_id) {
                 var vm = new Vue({
                     methods: {
                         get: function () {
-                            this.$http.get('http://127.0.0.1:8088/get_rt$', {
-                                stock_id: stockId
-                            }).then(function (res) {
+                            this.$http.get('http://127.0.0.1:8088/get_rt$' + stockId).then(function (res) {
                                 dataRt = handleRtData(res.body.data, res.body.basePrice);
                                 flushOptionRt();
                                 myChart.setOption(optionRt, true);
@@ -797,13 +795,10 @@ const Kline = (function (stock_id) {
             }
 
             function flushHis(interval) {
-                var vm = new Vue({
+                const vm = new Vue({
                     methods: {
                         get: function () {
-                            this.$http.get('http://127.0.0.1:8088/get_his', {
-                                stock_id: stockId,
-                                interval: interval
-                            }).then(function (res) {
+                            this.$http.get('http://127.0.0.1:8088/get_his$' + stock_id + '$' + interval).then(function (res) {
                                 dataHis = handleHistoryData(res.body.data);
                                 flushOptionHis();
                                 myChart.setOption(optionHis, true);
@@ -822,7 +817,8 @@ const Kline = (function (stock_id) {
             };
 
             this.flushData = function () {
-                if (curType == 'rt') {
+                if (curType === 'rt') {
+                    flushRt();
                 }
                 console.log(Date.now());
             }
