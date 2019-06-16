@@ -1,29 +1,25 @@
 // var http = require('http');
-var URL = require('url');
-var kline_db = require('./modules/kline_query');
-var search_stock = require('./modules/search_stock');
+const URL = require('url');
+const kline_db = require('./modules/kline_query');
+const search_stock = require('./modules/search_stock');
 
 const express = require('express');
 const app = express();
 // const bodyParser = require('body-parser');
-var server = require('http').createServer(app);
+const server = require('http').createServer(app);
 
-app.get('/klin_db/get_rt', function (req, res) {
-    console.log(req.url);
-    const params = URL.parse(req.url, true).query;
-    const stock_id = params.id;
-    kline_db.selectRt(stock_id, function (result) {
+app.get('/kline/get_rt', function (req, res) {
+    const json = URL.parse(req.url, true).query;
+    kline_db.selectRt(json, function (result) {
         const query_result = {data: result.data, basePrice: result.base_price};
         res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
         res.end(JSON.stringify(query_result));
     });
 });
 
-app.get('/klin_db/get_his', function (req, res) {
-    const params = URL.parse(req.url, true).query;
-    const stock_id = params.id;
-    const interval = params.interval;
-    kline_db.selectHis(stock_id, interval, function (result) {
+app.get('/kline/get_his', function (req, res) {
+    const json = URL.parse(req.url, true).query;
+    kline_db.selectHis(json, function (result) {
         const query_result = {data: result};
         res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
         res.end(JSON.stringify(query_result));
@@ -78,10 +74,9 @@ app.get('/api/stock_in_fund', function (req, res) {
 
 app.post('/api/search_stock', function (req, res) {
     const data = req.body.data;
-    kline_db.selectHis(stock_id, interval, function (result) {
-        const query_result = {data: result};
+    search_stock.searchStock(data, function (result) {
         res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
-        res.end(JSON.stringify(query_result));
+        res.end(JSON.stringify(result));
     });
 });
 

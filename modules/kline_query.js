@@ -257,8 +257,9 @@ const selectYear = (num, callback) => {
     })
 };
 
-const selectRt = (num, callback) => {
-    var sql_rt = 'SELECT * FROM ' + num + '_RT';
+const selectRt = (json, callback) => {
+    const stock_id = json.id;
+    var sql_rt = 'SELECT * FROM ' + stock_id + '_RT';
     var arr = [];
     var result = {};
     connection.query(sql_rt, (err, rows) => {
@@ -279,7 +280,7 @@ const selectRt = (num, callback) => {
         }
         result.data = arr;
     });
-    var sql_base = 'SELECT close_price FROM `' + num + '` ORDER BY date DESC LIMIT 1';
+    var sql_base = 'SELECT close_price FROM `' + stock_id + '` ORDER BY date DESC LIMIT 1';
     var base_price;
     connection.query(sql_base, (err, rows) => {
         if (err) {
@@ -326,27 +327,25 @@ const selectCurrentRt = (num, callback) => {
     })
 };
 
-const selectHis = (num, interval, callback) => {
+const selectHis = (json, callback) => {
+    const stock_id = json.id;
+    const interval = json.interval;
     switch (interval) {
         case 'day':
-            selectHt(num, callback);
+            selectHt(stock_id, callback);
             break;
         case 'week':
-            selectWeek(num, callback);
+            selectWeek(stock_id, callback);
             break;
         case 'month':
-            selectMonth(num, callback);
+            selectMonth(stock_id, callback);
             break;
         case 'year':
-            selectYear(num, callback);
+            selectYear(stock_id, callback);
             break;
     }
 };
 
-// exports.selectHt = selectHt;
-// exports.selectWeek = selectWeek;
-// exports.selectMonth = selectMonth;
-// exports.selectYear = selectYear;
 exports.selectRt = selectRt;
 exports.selectCurrentRt = selectCurrentRt;
 exports.selectHis = selectHis;

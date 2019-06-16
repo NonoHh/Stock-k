@@ -806,7 +806,7 @@ const Kline = (function (stock_id) {
                 var vm = new Vue({
                     methods: {
                         get: function () {
-                            this.$http.get('http://127.0.0.1:8088/klin_db/get_rt?id=' + stockId).then(function (res) {
+                            this.$http.get('http://127.0.0.1:8088/kline/get_rt?id=' + stockId).then(function (res) {
                                 dataRt = handleRtData(res.body.data, res.body.basePrice);
                                 flushOptionRt();
                                 myChart.setOption(optionRt, true);
@@ -824,7 +824,7 @@ const Kline = (function (stock_id) {
                 const vm = new Vue({
                     methods: {
                         get: function () {
-                            this.$http.get('http://127.0.0.1:8088/klin_db/get_his?id=' + stock_id + '&interval=' + interval).then(function (res) {
+                            this.$http.get('http://127.0.0.1:8088/kline/get_his?id=' + stock_id + '&interval=' + interval).then(function (res) {
                                 dataHis = handleHistoryData(res.body.data);
                                 flushOptionHis();
                                 myChart.setOption(optionHis, true);
