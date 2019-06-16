@@ -1,47 +1,5 @@
-var http = require('http');
-var URL = require('url');
-const conn = require('./config');
+const conn = require('../js/config');
 const connection = conn();
-
-server = http.createServer(function (request, response) {
-    console.log(request.url);
-    if (request.url.indexOf('/get_rt') === 0) {
-        const stock_id = request.url.split('$')[1];
-        selectRt(stock_id, function (result) {
-            const query_result = {data: result, basePrice: 10.17};
-            response.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
-            response.end(JSON.stringify(query_result));
-        });
-    } else if (request.url.indexOf('/get_his') === 0) {
-        const stock_id = request.url.split('$')[1];
-        const interval = request.url.split('$')[2];
-        if (interval === 'day') {
-            selectHt(stock_id, function (result) {
-                const query_result = {data: result};
-                response.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
-                response.end(JSON.stringify(query_result));
-            });
-        } else if (interval === 'week') {
-            selectWeek(stock_id, function (result) {
-                const query_result = {data: result};
-                response.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
-                response.end(JSON.stringify(query_result));
-            });
-        } else if (interval === 'month') {
-            selectMonth(stock_id, function (result) {
-                const query_result = {data: result};
-                response.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
-                response.end(JSON.stringify(query_result));
-            });
-        } else if (interval === 'year') {
-            selectYear(stock_id, function (result) {
-                const query_result = {data: result};
-                response.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
-                response.end(JSON.stringify(query_result));
-            });
-        }
-    }
-});
 
 const selectHt = (num, callback) => {
     var sql_ht = 'SELECT * FROM `' + num + '`';
@@ -132,9 +90,9 @@ const selectWeek = (num, callback) => {
                 min_w,
                 max_w,
                 vol_w,
-                MACD_W,
-                DIF_W,
-                DEA_W
+                MACD_W.toFixed(2),
+                DIF_W.toFixed(2),
+                DEA_W.toFixed(2)
             ];
         }
         callback(arr);
@@ -209,9 +167,9 @@ const selectMonth = (num, callback) => {
                     min_m,
                     max_m,
                     vol_m,
-                    MACD_M,
-                    DIF_M,
-                    DEA_M
+                    MACD_M.toFixed(2),
+                    DIF_M.toFixed(2),
+                    DEA_M.toFixed(2)
                 ];
                 count++;
             }
@@ -288,9 +246,9 @@ const selectYear = (num, callback) => {
                     min_y,
                     max_y,
                     vol_y,
-                    MACD_Y,
-                    DIF_Y,
-                    DEA_Y
+                    MACD_Y.toFixed(2),
+                    DIF_Y.toFixed(2),
+                    DEA_Y.toFixed(2)
                 ];
                 count++;
             }
@@ -301,6 +259,8 @@ const selectYear = (num, callback) => {
 
 const selectRt = (num, callback) => {
     var sql_rt = 'SELECT * FROM ' + num + '_RT';
+    var arr = [];
+    var result = {};
     connection.query(sql_rt, (err, rows) => {
         if (err) {
             console.log('[SELECT ERROR] - ', err.sqlMessage);
@@ -308,7 +268,6 @@ const selectRt = (num, callback) => {
             callback(errNews, '');
             return;
         }
-        var arr = [];
         for (var i = 0; i < rows.length; i++) {
             var mydate = rows[i].date.getFullYear() + "-" + (rows[i].date.getMonth() + 1) + "-" + rows[i].date.getDate();
             arr[i] = [
@@ -318,8 +277,21 @@ const selectRt = (num, callback) => {
                 rows[i].amount
             ];
         }
-        callback(arr);
-    })
+        result.data = arr;
+    });
+    var sql_base = 'SELECT close_price FROM `' + num + '` ORDER BY date DESC LIMIT 1';
+    var base_price;
+    connection.query(sql_base, (err, rows) => {
+        if (err) {
+            console.log('[SELECT ERROR] - ', err.sqlMessage);
+            let errNews = err.sqlMessage;
+            callback(errNews, '');
+            return;
+        }
+        base_price = rows[0].close_price;
+        result.base_price = base_price;
+        callback(result);
+    });
 };
 
 const selectCurrentRt = (num, callback) => {
@@ -354,7 +326,27 @@ const selectCurrentRt = (num, callback) => {
     })
 };
 
-server.listen(8088, function () {
-    console.log("Listen on port 8088");
-    connection.connect();
-});
+const selectHis = (num, interval, callback) => {
+    switch (interval) {
+        case 'day':
+            selectHt(num, callback);
+            break;
+        case 'week':
+            selectWeek(num, callback);
+            break;
+        case 'month':
+            selectMonth(num, callback);
+            break;
+        case 'year':
+            selectYear(num, callback);
+            break;
+    }
+};
+
+// exports.selectHt = selectHt;
+// exports.selectWeek = selectWeek;
+// exports.selectMonth = selectMonth;
+// exports.selectYear = selectYear;
+exports.selectRt = selectRt;
+exports.selectCurrentRt = selectCurrentRt;
+exports.selectHis = selectHis;

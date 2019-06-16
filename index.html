@@ -7,15 +7,15 @@
     <script src="js/echarts.min.js"></script>
     <script src="js/vue.js"></script>
     <script src="js/vue-resource.js"></script>
-    <script src="kline.js"></script>
+    <script src="js/kline.js"></script>
+<!--    <script src="js/vue-cookies.js"></script>-->
 </head>
 
 <body>
-<div id="main" style="width: 1200px;height:900px;margin:auto;"></div>
+<div id="kline" style="width: 800px; height: 600px; margin: auto;"></div>
 <script type="text/javascript">
-    var kline = new Kline('600048');
+    var kline = new Kline('600909');
     kline.show();
-    // self.setInterval("kline.flushData()", 5000);
 </script>
 </body>
 
