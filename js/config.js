@@ -5,7 +5,7 @@ const connectDB = () => {
         host: "localhost",
         user: "root",
         password: "root",
-        database: "se"
+        database: "stock"
     });
 };
 
