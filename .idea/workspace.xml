@@ -2,14 +2,17 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="cdd21630-fbfe-4c7b-8fc1-780b679accb3" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/modules/center_db.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/back.js" beforeDir="false" afterPath="$PROJECT_DIR$/back.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/CapitalBackend.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/CapitalBackend.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/center.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/center.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/dbselect.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/dbselect.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/dbupdate.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/dbupdate.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/search_stock.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/search_stock.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/test.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/modules/time.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/time.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/modules/transaction.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/transaction.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/modules/update.js" beforeDir="false" afterPath="$PROJECT_DIR$/modules/update.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/test.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -23,15 +26,6 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/modules/transaction.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-1334">
-              <caret line="59" column="1" lean-forward="true" selection-start-line="59" selection-start-column="1" selection-end-line="59" selection-end-column="1" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/modules/search_stock.js">
           <provider selected="true" editor-type-id="text-editor">
             <state>
@@ -40,11 +34,56 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/back.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="225">
-              <caret line="201" column="3" lean-forward="true" selection-start-line="201" selection-start-column="3" selection-end-line="201" selection-end-column="3" />
+            <state relative-caret-position="525">
+              <caret line="253" selection-start-line="253" selection-end-line="253" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/modules/center.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="229">
+              <caret line="30" column="48" selection-start-line="30" selection-start-column="48" selection-end-line="30" selection-end-column="48" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/dbselect.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="121">
+              <caret line="70" column="9" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/transaction.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="258">
+              <caret line="453" column="79" selection-start-line="453" selection-start-column="79" selection-end-line="453" selection-end-column="79" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/CapitalBackend.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="6141">
+              <caret line="267" column="44" selection-start-line="267" selection-start-column="44" selection-end-line="267" selection-end-column="44" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/modules/center_db.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="184">
+              <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
             </state>
           </provider>
         </entry>
@@ -70,9 +109,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>8</find>
-      <find>day.</find>
-      <find>week</find>
       <find>year</find>
       <find>10.44</find>
       <find>num.toS</find>
@@ -90,9 +126,7 @@
       <find>se.</find>
       <find>stock_info</find>
       <find>cancel</find>
-      <find>consol</find>
       <find>accountid</find>
-      <find>console</find>
       <find>cancel_se</find>
       <find>transaction_one</find>
       <find>create_buy</find>
@@ -100,6 +134,11 @@
       <find>sell</find>
       <find>waiting</find>
       <find>transaction</find>
+      <find>consol</find>
+      <find>stock_id</find>
+      <find>create</find>
+      <find>delete_buy</find>
+      <find>console</find>
     </findStrings>
     <replaceStrings>
       <replace>upColor</replace>
@@ -128,24 +167,24 @@
         <option value="$PROJECT_DIR$/modules/test.js" />
         <option value="$PROJECT_DIR$/modules/account.js" />
         <option value="$PROJECT_DIR$/js/config.js" />
-        <option value="$PROJECT_DIR$/modules/CapitalBackend.js" />
-        <option value="$PROJECT_DIR$/modules/center.js" />
-        <option value="$PROJECT_DIR$/modules/dbselect.js" />
-        <option value="$PROJECT_DIR$/modules/transaction.js" />
         <option value="$PROJECT_DIR$/index.html" />
         <option value="$PROJECT_DIR$/modules/update.js" />
         <option value="$PROJECT_DIR$/modules/dbupdate.js" />
         <option value="$PROJECT_DIR$/modules/time.js" />
         <option value="$PROJECT_DIR$/modules/search_stock.js" />
+        <option value="$PROJECT_DIR$/modules/center_db.js" />
         <option value="$PROJECT_DIR$/back.js" />
+        <option value="$PROJECT_DIR$/modules/CapitalBackend.js" />
+        <option value="$PROJECT_DIR$/modules/transaction.js" />
+        <option value="$PROJECT_DIR$/modules/dbselect.js" />
+        <option value="$PROJECT_DIR$/modules/center.js" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-10" />
-    <option name="y" value="-10" />
-    <option name="width" value="1940" />
-    <option name="height" value="1100" />
+    <option name="x" value="737" />
+    <option name="width" value="1192" />
+    <option name="height" value="1098" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -155,7 +194,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -177,6 +215,7 @@
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -184,7 +223,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="javascript.nodejs.core.library.configured.version" value="10.16.0" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/modules" />
     <property name="nodejs_interpreter_path" value="node" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -194,17 +233,18 @@
     <property name="ts.external.directory.path" value="E:\Program Files\JetBrains\WebStorm 2019.1.1\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="D:\code\html\back\modules" />
+      <recent name="D:\code\html\kline\modules" />
+      <recent name="D:\code\html\kline\js" />
+      <recent name="D:\code\html\kline" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\code\html\back\modules" />
       <recent name="D:\code\html\kline\modules" />
       <recent name="D:\code\html\kline" />
       <recent name="D:\code\html\kline\js" />
       <recent name="D:\code\html\kline\asset\ico" />
-      <recent name="D:\code\html\kline\lib" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="D:\code\html\kline\modules" />
-      <recent name="D:\code\html\kline\js" />
-      <recent name="D:\code\html\kline" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -273,12 +313,14 @@
       <workItem from="1560957680138" duration="8941000" />
       <workItem from="1560989035522" duration="33000" />
       <workItem from="1560989716281" duration="1849000" />
-      <workItem from="1561001268852" duration="182000" />
+      <workItem from="1561001268852" duration="207000" />
+      <workItem from="1561028202475" duration="9014000" />
+      <workItem from="1561037355943" duration="1074000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="136076000" />
+    <option name="totallyTimeSpent" value="146189000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -299,7 +341,7 @@
       <window_info id="Favorites" order="3" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.2922252" />
-      <window_info anchor="bottom" id="Run" order="2" weight="0.3069705" />
+      <window_info active="true" anchor="bottom" id="Run" order="2" visible="true" weight="0.44101876" />
       <window_info anchor="bottom" id="Debug" order="3" weight="0.3994638" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -308,7 +350,7 @@
       <window_info anchor="bottom" id="Version Control" order="8" weight="0.3297587" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" />
       <window_info anchor="bottom" id="Terminal" order="10" weight="0.41689008" />
-      <window_info anchor="bottom" id="File Transfer" order="11" weight="0.1461126" />
+      <window_info anchor="bottom" id="File Transfer" order="11" weight="0.43565685" />
       <window_info anchor="bottom" id="TypeScript" order="12" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -441,27 +483,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/modules/CapitalBackend.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2468">
-          <caret line="323" column="24" selection-start-line="323" selection-start-column="24" selection-end-line="323" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/modules/center.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="230">
-          <caret line="10" column="31" selection-start-line="10" selection-start-column="31" selection-end-line="10" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/modules/dbselect.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="306">
-          <caret line="43" column="1" selection-start-line="43" selection-start-column="1" selection-end-line="43" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/modules/dbupdate.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="651">
@@ -476,10 +497,24 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/modules/transaction.js">
+    <entry file="file://$PROJECT_DIR$/modules/search_stock.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1334">
-          <caret line="59" column="1" lean-forward="true" selection-start-line="59" selection-start-column="1" selection-end-line="59" selection-end-column="1" />
+        <state>
+          <caret column="43" selection-start-column="43" selection-end-column="43" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/CapitalBackend.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="6141">
+          <caret line="267" column="44" selection-start-line="267" selection-start-column="44" selection-end-line="267" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/center_db.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="184">
+          <caret line="8" column="3" selection-start-line="8" selection-start-column="3" selection-end-line="8" selection-end-column="3" />
         </state>
       </provider>
     </entry>
@@ -490,17 +525,31 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/modules/search_stock.js">
+    <entry file="file://$PROJECT_DIR$/modules/transaction.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="43" selection-start-column="43" selection-end-column="43" />
+        <state relative-caret-position="258">
+          <caret line="453" column="79" selection-start-line="453" selection-start-column="79" selection-end-line="453" selection-end-column="79" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/back.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="225">
-          <caret line="201" column="3" lean-forward="true" selection-start-line="201" selection-start-column="3" selection-end-line="201" selection-end-column="3" />
+        <state relative-caret-position="525">
+          <caret line="253" selection-start-line="253" selection-end-line="253" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/dbselect.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="121">
+          <caret line="70" column="9" selection-start-line="70" selection-start-column="9" selection-end-line="70" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/modules/center.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="229">
+          <caret line="30" column="48" selection-start-line="30" selection-start-column="48" selection-end-line="30" selection-end-column="48" />
         </state>
       </provider>
     </entry>

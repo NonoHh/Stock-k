@@ -20,7 +20,7 @@ class CapitalBackend {
     }
 
     static createTable() { //create a table
-        this.connection.query('create table capital_account(account_id int primary key auto_increment, stock_id int, account_balance decimal(10,2),account_state char(32),password_hash char(64), frozen decimal(10,2));', function (err, results, fields) {
+        this.connection.query('create table capital_account(account_id int primary key auto_increment, user_id int, account_balance decimal(10,2),account_state char(32),password_hash char(64), frozen decimal(10,2));', function (err, results, fields) {
             if (err) {
                 // console.log(err.message);
             } else {
@@ -77,7 +77,7 @@ class CapitalBackend {
 
     static deleteAllAccounts(ID) {
         return new Promise((resolve, reject) => {
-            CapitalBackend.connection.query(`delete from capital_account where stock_id=${ID};`, function (err, results, fields) {
+            CapitalBackend.connection.query(`delete from capital_account where user_id=${ID};`, function (err, results, fields) {
                 if (err) {
                     resolve(false)
                 } else {
@@ -89,7 +89,7 @@ class CapitalBackend {
 
     static restoreStock(old_id, new_id) {
         return new Promise((resolve, reject) => {
-            CapitalBackend.connection.query(`update capital_account set stock_id=${new_id} where stock_id=${old_id};`, function (err, results, fields) {
+            CapitalBackend.connection.query(`update capital_account set user_id=${new_id} where user_id=${old_id};`, function (err, results, fields) {
                 if (err) {
                     resolve(false)
                 } else {
@@ -175,118 +175,21 @@ class CapitalBackend {
         });
     }
 
-    static updateBalance(ID, password, amount, flag) { //flag = add or subtract
-        const crypto = require('crypto');
-        var obj = crypto.createHash('sha256');
-        obj.update(password);
-        var hash = obj.digest('hex'); //hex是十六进制
-        obj.end();
+    static addBalance(ID, amount) { //flag = add or subtract
         return new Promise((resolve, reject) => {
-            this.connection.query(`select password_hash from capital_account where account_id=${ID};`, function (err, results, fields) {
-                if (err || results.length == 0) {
-                    console.log(err)
-                    resolve("fail")
+            this.connection.query(`update capital_account set account_balance = account_balance+${amount} where account_id=${ID};`, function (err, results, fields) {
+                if (err) {
+                    resolve(false)
                 } else {
-                    if (results[0]['password_hash'] == hash) {
-                        CapitalBackend.connection.query(`select account_state from capital_account where account_id=${ID};`, function (err, results, fields) {
-                            if (err || results.length == 0) {
-                                resolve('fail')
-                            } else {
-                                if (results[0]['account_state'] != 'normal') {
-                                    resolve("isfreeze")
-                                } else {
-                                    if (flag == "add") {
-                                        CapitalBackend.connection.query(`update capital_account set account_balance=account_balance+${amount} where account_id=${ID};`, function (err, results, fields) {
-                                            if (err) {
-                                                resolve("fail")
-                                            } else {
-                                                resolve("success")
-                                            }
-                                        });
-                                    } else {
-                                        // async function check() {
-                                        //     if (await CapitalBackend.checkBalance(ID, amount) == 'sufficient') {
-                                        //         CapitalBackend.connection.query(`update capital_account set account_balance=account_balance-${amount} where account_id=${ID};`, function(err, results, fields) {
-                                        //             if (err) {
-                                        //                 resolve("fail")
-                                        //             } else {
-                                        //                 resolve("success")
-                                        //             }
-                                        //         });
-                                        //     } else {
-                                        //         resolve("insufficient")
-                                        //     }
-                                        // }
-                                        // check()
-                                    }
-                                }
-                            }
-                        });
-                    } else {
-                        resolve("wrongpass")
-                    }
+                    resolve(true)
                 }
             });
-        })
-    }
-
-    static updateState(ID, password, action) { //action = freeze or unfreeze
-        const crypto = require('crypto');
-        var obj = crypto.createHash('sha256');
-        obj.update(password);
-        var hash = obj.digest('hex'); //hex是十六进制
-        obj.end();
-        return new Promise((resolve, reject) => {
-            this.connection.query(`select password_hash from capital_account where account_id=${ID};`, function (err, results, fields) {
-                if (err || results.length == 0) {
-                    console.log(err)
-                    resolve("fail")
-                } else {
-                    if (results[0]['password_hash'] == hash) {
-                        var state = 'normal'
-                        if (action == 'freeze') {
-                            state = 'freeze'
-                        } else if (action == 'unfreeze') {
-                            state = 'normal'
-                        } else {
-                            resolve('fail')
-                        }
-                        CapitalBackend.connection.query(`update capital_account set account_state=\'${state}\' where account_id=${ID};`, function (err, results, fields) {
-                            if (err) {
-                                resolve('fail')
-                            } else {
-                                resolve('success')
-                            }
-                        })
-                    } else {
-                        resolve("wrongpass")
-                    }
-                }
-            });
-        })
-    }
-
-    static getOneAcount(account_id) {
-        return new Promise((resolve, reject) => {
-            CapitalBackend.connection.query(`select account_id, account_balance, account_state, frozen from capital_account where account_id = \'${account_id}\';`, function (err, results, fields) {
-                if (err || results.length == 0) {
-                    // console.log(err)
-                    resolve({'code': -1, 'msg': '查询失败'})
-                } else {
-                    var output = {}
-                    // console.log(results)
-                    // JSON.parse(JSON.stringify(results)).forEach(element => {
-
-                    // });
-                    resolve("success")
-                }
-            })
         })
     }
 
     static getAllAcounts(stock_id) {
         return new Promise((resolve, reject) => {
-            CapitalBackend.connection.query(`select account_id, account_balance, frozen from capital_account where stock_id =${stock_id};`, function (err, results, fields) {
+            CapitalBackend.connection.query(`select account_id, account_balance, frozen from capital_account where user_id =${stock_id};`, function (err, results, fields) {
                 if (err || results.length == 0) {
                     // console.log(err)
                     resolve({'code': -1, 'msg': '查询失败'})
@@ -323,12 +226,18 @@ class CapitalBackend {
                     resolve({'code': -1, 'msg': '创建失败'})
                 } else {
                     if (results[0]['password_hash'] == hash) {
-                        var money = price * total
+                        var money = price * total;
                         if (results[0]['account_balance'] >= money) {
-                            transaction.add_buy(buyer_id, stock_id, price, total, function (success) {
-                                if (success)
-                                    resolve({'code': 0, 'msg': '创建成功'});
-                                else
+                            transaction.add_buy(buyer_id, stock_id, price, total, function (success, id) {
+                                if (success) {
+                                    CapitalBackend.connection.query(`update capital_account set account_balance=account_balance-${money}, frozen=frozen+${money} where account_id= ${buyer_id};`, function (err, results, fields) {
+                                        if (err) {
+                                            resolve({'code': -1, 'msg': '创建失败'});
+                                        } else {
+                                            resolve({'code': 0, 'msg': '创建成功'});
+                                        }
+                                    })
+                                } else
                                     resolve({'code': -1, 'msg': '创建失败'});
                             })
                             // resolve({ 'code': 0, 'msg': '创建成功' })
@@ -349,7 +258,6 @@ class CapitalBackend {
         obj.update(password);
         var hash = obj.digest('hex');
 
-
         return new Promise((resolve, reject) => {
             this.connection.query(`select password_hash, account_balance from capital_account where account_id=${buyer_id};`, function (err, results, fields) {
                 if (err || results.length == 0) {
@@ -358,10 +266,11 @@ class CapitalBackend {
                 } else {
                     if (results[0]['password_hash'] == hash) {
                         transaction.cancel_buy(buy_id, function (success) {
-                            if (success)
+                            if (success) {
                                 resolve({'code': 0, 'msg': '撤销成功'})
-                            else
+                            } else {
                                 resolve({'code': -1, 'msg': '撤销失败'})
+                            }
                         })
                     } else {
                         resolve({'code': -1, 'msg': '密码错误'})
@@ -385,7 +294,7 @@ class CapitalBackend {
                     resolve({'code': -1, 'msg': '创建失败'})
                 } else {
                     if (results[0]['password_hash'] == hash) {
-                        transaction.add_sell(seller_id, stock_id, price, total, function (success) {
+                        transaction.add_sell(seller_id, stock_id, price, total, function (success, id) {
                             if (success)
                                 resolve({'code': 0, 'msg': '创建成功'})
                             else
@@ -413,10 +322,16 @@ class CapitalBackend {
                     resolve({'code': -1, 'msg': '撤销失败'})
                 } else {
                     if (results[0]['password_hash'] == hash) {
-                        transaction.cancel_sell(sell_id, function (success) {
-                            if (success)
-                                resolve({'code': 0, 'msg': '撤销成功'})
-                            else
+                        transaction.cancel_sell(sell_id, function (success, amount) {
+                            if (success) {
+                                CapitalBackend.connection.query(`update capital_account set account_balance=account_balance+${amount} where account_id= ${seller_id};`, function (err, results, fields) {
+                                    if (err) {
+                                        resolve({'code': 0, 'msg': '撤销成功'});
+                                    } else {
+                                        resolve({'code': -1, 'msg': '撤销失败'});
+                                    }
+                                })
+                            } else
                                 resolve({'code': -1, 'msg': '撤销失败'})
                         })
                         // resolve({ 'code': 0, 'msg': '撤销成功' })

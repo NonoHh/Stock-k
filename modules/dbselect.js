@@ -1,44 +1,51 @@
-//check if initialized
-var mysql = require('mysql');
+connection = require("./center_db.js").connection;
 
-var connection = mysql.createConnection({
-    host: 'localhost',
-    user: 'root',
-    password: 'root',
-    database: 'stock'
-});
-
-var ready = 0;
-
-function init() {
-    connection.connect();
-    ready = 1;
-    console.log("dbselect are initialized");
+function select_max_buy_id(callback) {
+    var sql = "select max(buy_id) as max_buy_id from offer_buy";
+    connection.query(sql, function (err, result) {
+        if (result.length)
+            callback(result[0].max_buy_id);
+        else
+            callback(1000000);
+    });
 }
 
-exports.init = init;
+exports.select_max_buy_id = select_max_buy_id;
 
-function end() {
-    if (ready == 0) {
-        console.log("[END ERROR] - dbselect are not initialized");
-        return;
-    }
-    connection.end();
-    ready = 0;
-    console.log("dbselect are stoped");
+function select_max_sell_id(callback) {
+    var sql = "select max(sell_id) as max_sell_id from offer_sell";
+    connection.query(sql, function (err, result) {
+        if (result.length)
+            callback(result[0].max_sell_id);
+        else
+            callback(1000000);
+    });
 }
 
-exports.end = end;
+exports.select_max_sell_id = select_max_sell_id;
+
+function select_max_trans_id(callback) {
+    var sql = "select max(trans_id) as max_trans_id from transaction";
+    connection.query(sql, function (err, result) {
+        if (result.length)
+            callback(result[0].max_trans_id);
+        else
+            callback(1000000);
+    });
+}
+
+exports.select_max_trans_id = select_max_trans_id;
 
 function select_account_offer_buy(account_id, callback) {
-    var select_account_buy_ = "SELECT * FROM offer_buy WHERE buyer_id = ? ";
-    var select_account_buy_p = [account_id];
-    connection.query(select_account_buy_, select_account_buy_p, function (err, result) {
+    console.log(account_id);
+    var select_account_buy_ = "select * from stock.offer_buy natural join stock.stock where buyer_id in " +
+        account_id + " order by date desc, time desc";
+    console.log(select_account_buy_);
+    connection.query(select_account_buy_, function (err, result) {
         if (err) {
             console.log('[SELECT OFFER_BUY ERROR] - ', err.message);
             return null;
         }
-        // console.log('select_offer_buy: ', account_id);
         callback(result);
     });
 }
@@ -46,15 +53,15 @@ function select_account_offer_buy(account_id, callback) {
 exports.select_account_offer_buy = select_account_offer_buy;
 
 function select_account_offer_sell(account_id, callback) {
-    var select_account_sell_ = "SELECT * FROM offer_sell WHERE seller_id = ? ";
-    var select_account_sell_p = [account_id];
-    connection.query(select_account_sell_, select_account_sell_p, function (err, result) {
+    console.log(account_id);
+    var select_account_sell_ = "select * from stock.offer_sell natural join stock.stock where seller_id in " +
+        account_id + " order by date desc, time desc";
+    console.log(select_account_sell_);
+    connection.query(select_account_sell_, function (err, result) {
         if (err) {
             console.log('[SELECT OFFER_SELL ERROR] - ', err.message);
             return null;
         }
-        // console.log('select_offer_sell: ', account_id);
-        console.log(result);
         callback(result);
     });
 }
@@ -62,16 +69,13 @@ function select_account_offer_sell(account_id, callback) {
 exports.select_account_offer_sell = select_account_offer_sell;
 
 function select_account_stock(account_id, callback) {
-    console.log('helloworld');
-    var select_accountstock_ = "SELECT * FROM account_stock WHERE account_id = ? ";
-    var select_accountstock_p = [account_id];
-    connection.query(select_accountstock_, select_accountstock_p, function (err, result) {
+    var select_accountstock_ = "select * from stock.account_stock natural join stock.stock where account_id in " +
+        account_id + " order by account_id";
+    connection.query(select_accountstock_, function (err, result) {
         if (err) {
             console.log('[SELECT ACCOUNT_STOCK ERROR] - ', err.message);
             return null;
         }
-        console.log(result);
-        // console.log('select_accountstock: ', account_id);
         callback(result);
     });
 }
@@ -87,7 +91,6 @@ function stock_check(account_id, stock_id) {
                 console.log('[SELECT ACCOUNT_STOCK ERROR] - ', err.message);
                 return null;
             }
-            console.log('select_accountstock: ', account_id, stock_id);
             callback(result);
         });
     };
@@ -105,7 +108,7 @@ function limite_check(stock_id) {
                 return null;
             }
 
-            console.log('select_limite: ', stock_id);
+            // console.log('select_limite: ', stock_id);
             callback(result);
         });
     };

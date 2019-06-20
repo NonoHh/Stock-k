@@ -1,8 +1,10 @@
-var async = require('async');
+var CronJob = require('cron').CronJob;
+
+//var async = require('async');
+var center_db = require('./center_db.js');
 var dbupdate = require('./dbupdate.js');
 var dbselect = require('./dbselect.js');
-require('./time.js');
-
+var update = require('./update.js');
 
 var cur_buy_id = 0, cur_sell_id = 0, cur_trans_id = 0, ready = 0;
 
@@ -14,17 +16,47 @@ function debug_nocheck_stock() {
 
 exports.debug_nocheck_stock = debug_nocheck_stock;
 
+Date.prototype.Format = function (fmt) {
+    var o = {
+        "M+": this.getMonth() + 1, //月份 
+        "d+": this.getDate(), //日 
+        "H+": this.getHours(), //小时 
+        "m+": this.getMinutes(), //分 
+        "s+": this.getSeconds(), //秒 
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
+        "S": this.getMilliseconds() //毫秒 
+    };
+    if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
+    for (var k in o)
+        if (new RegExp("(" + k + ")").test(fmt)) fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (("00" + o[k]).substr(("" + o[k]).length)));
+    return fmt;
+}
+
 var buy_queue = Array();
 var buy_tmp = Array();
 var sell_queue = Array();
 var sell_tmp = Array();
 
-function init(buy_id, sell_id, trans_id) {
-    cur_buy_id = buy_id;
-    cur_sell_id = sell_id;
-    cur_trans_id = trans_id;
+function init(debug) {
+    new CronJob('59 * * * * *', function () {
+        close();
+    }, null, true);
+
+    center_db.init();
+    dbselect.select_max_buy_id(function (result) {
+        cur_buy_id = result;
+        console.log("cur_buy_id:", cur_buy_id);
+    });
+    dbselect.select_max_sell_id(function (result) {
+        cur_sell_id = result;
+        console.log("cur_sell_id:", cur_sell_id);
+    });
+    dbselect.select_max_trans_id(function (result) {
+        cur_trans_id = result;
+        console.log("cur_trans_id:", cur_trans_id);
+    });
     ready = 1;
-    debug_nocheck_stock_ = 0;
+    debug_nocheck_stock_ = debug;
     console.log("transaction are initialized");
 }
 
@@ -35,9 +67,7 @@ function end() {
         console.log("[END ERROR] - transaction are not initialized");
         return;
     }
-    console.log(cur_buy_id, cur_sell_id, cur_trans_id);
-    console.log(buy_tmp);
-    console.log(sell_tmp);
+    center_db.end();
     ready = 0;
     console.log("transaction are stoped");
 }
@@ -54,7 +84,9 @@ function cancel_buy(buy_id, callback) {
         buy_queue.find(function (element) {
             return element.buy_id == buy_id;
         }).nontradable = 3;
-        callback(true);
+        callback(true, buy_queue.find(function (element) {
+            return element.buy_id == buy_id;
+        }).freeze_money);
     } else
         callback(false);
 }
@@ -73,6 +105,7 @@ function create_offer_buy(buyer_id, stock_id, price, total) {
     object.time = new Date().Format("HH:mm:ss");
     object.total = total;
     object.rest = total;
+    object.freeze_money = price * total;
     dbupdate.insert_buy(object.buy_id, object.buyer_id, object.stock_id, object.price, object.date, object.time, object.total, object.rest, "waiting");
     return object;
 }
@@ -128,7 +161,7 @@ function add_buy(buyer_id, stock_id, price, total, callback) {
     buy_tmp.push(tmp);
     buy_queue.push(tmp);
     _doBuyTrans(tmp);
-    callback(tmp.buy_id);
+    callback(true, tmp.buy_id);
     return;
 }
 
@@ -137,6 +170,8 @@ exports.add_buy = add_buy;
 //sell
 function cancel_sell(sell_id, callback) {
     if (sell_queue.find(function (element) {
+
+
         return element.sell_id == sell_id;
     })) {
         sell_queue.find(function (element) {
@@ -144,6 +179,7 @@ function cancel_sell(sell_id, callback) {
         }).nontradable = 3;
         dbupdate.update_sell_status_byid(sell_id, 'canceled');
         callback(true);
+
     } else
         callback(false);
 }
@@ -228,7 +264,7 @@ function add_sell(seller_id, stock_id, price, total, callback) {
             sell_tmp.push(tmp);
             sell_queue.push(tmp);
             _doSellTrans(tmp);
-            callback(tmp.sell_id);
+            callback(true, tmp.sell_id);
         } else {
             console.log("[ADD SELL OFFER FAILED] - stock not enough");
             callback(false);
@@ -243,11 +279,21 @@ function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bpri
     if (trans_num <= 0) return;
     //TODO dubug
     var price = (bprice + sprice) / 2;
-    dbupdate.insert_transaction(++cur_trans_id, stock_id, price, trans_num, buy_id, sell_id, new Date().Format("yyyy-MM-dd"), new Date().Format("HH:mm:ss"));
+    var date = new Date().Format("yyyy-MM-dd");
+    var time = new Date().Format("HH:mm:ss");
+
+    dbupdate.insert_transaction(++cur_trans_id, stock_id, price, trans_num, buy_id, sell_id, date, time);
     dbupdate.update_buy_rest_byid(buy_id, -trans_num);
+    if (buy_queue[bp].rest == 0) {
+        dbupdate.update_buy_status_byid(buy_id, "finish");
+    }
     dbupdate.update_sell_rest_byid(sell_id, -trans_num);
-    //TODO：把status改成finished
-    //TODO：调用K线的update
+    buy_queue[bp].freeze_money -= price * trans_num;
+    if (sell_queue[sp].rest == 0) {
+        dbupdate.update_sell_status_byid(sell_id, "finish");
+    }
+    update.update(stock_id, date, time, price, trans_num)
+
     //TODO：limit check
 
     // var mqt = new dbselect.limite_check(stock_id);
@@ -255,10 +301,19 @@ function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bpri
     //
     // function processdata(result) {
     //     var price = (bprice + sprice) / 2;
-    //     if (price <= result.limite_up && price >= result.limite_down) {
-    //         dbupdate.insert_transaction(++cur_trans_id, stock_id, price, trans_num, buy_id, sell_id, new Date().Format("yyyy-MM-dd"), new Date().Format("HH:mm:ss"));
-    //         dbupdate.update_buy_rest_byid(buy_id, -trans_num);
-    //         dbupdate.update_sell_rest_byid(sell_id, -trans_num);
+    //     var date = new Date().Format("yyyy-MM-dd");
+    //     var time = new Date().Format("HH:mm:ss");
+
+    //     dbupdate.insert_transaction(++cur_trans_id, stock_id, price, trans_num, buy_id, sell_id, date, time);
+    //     dbupdate.update_buy_rest_byid(buy_id, -trans_num);
+    //     if(buy_queue[bp].rest==0){
+    //         dbupdate.update_buy_status_byid(buy_id, "finish");
+    //     }
+    //     dbupdate.update_sell_rest_byid(sell_id, -trans_num, -price*trans_num);
+    //     if(sell_queue[sp].rest==0){
+    //         dbupdate.update_sell_status_byid(sell_id, "finish");
+    //     }
+    //     update.update(stock_id, date, time, price, trans_num)
     //     } else {
     //         console.log("make transaction failed, price ", price, " of stock ", stock_id, " is limited");
     //         if (buy_queue[bp].nontradable == 1) buy_queue[bp].nontradable = 0;
@@ -316,6 +371,7 @@ function transaction_ones() {
     }
 }
 
+/*
 function transaction() {
     if (ready == 0) {
         console.log("[TRANSACTION ERROR] - transaction are not initialized");
@@ -383,10 +439,24 @@ function transaction() {
 }
 
 exports.transaction = transaction;
+*/
 
 
-
-
+function close() {
+    /*
+        console.log("closed");
+        for(var i =0; i<sell_queue.length; i++){
+            if(sell_queue[i].nontradable==0)
+                dbupdate.update_sell_status_byid(sell_queue[i].sell_id,'outdate');
+        }
+        for(var i =0; i<buy_queue.length; i++){
+            if(buy_queue[i].nontradable==0)
+                dbupdate.update_buy_status_byid(buy_queue[i].buy_id,'outdate');
+        }
+        update_close()
+        end();
+    */
+};
 
 
 

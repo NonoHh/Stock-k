@@ -10,8 +10,7 @@ const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
 
-transaction.init(1000305, 1000305, 1000302);
-transaction.debug_nocheck_stock();
+transaction.init(1);
 capital.init('127.0.0.1', 'root', 'root', 'stock');
 
 var multipart = require('connect-multiparty');
