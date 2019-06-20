@@ -8,16 +8,11 @@ const transaction = require('./modules/transaction');
 const capital = require('./modules/CapitalBackend').capital;
 const express = require('express');
 const app = express();
-// const bodyParser = require('body-parser');
 const server = require('http').createServer(app);
+
 transaction.init(1000305, 1000305, 1000302);
 transaction.debug_nocheck_stock();
-
-// var bodyParser = require('body-parser');
-// var urlencodedParser = bodyParser.urlencoded({extended: true});
-// var jsonParser = bodyParser.json();
-// app.use(urlencodedParser);
-// app.use(jsonParser);
+capital.init('127.0.0.1', 'root', 'root', 'stock');
 
 var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
@@ -190,7 +185,6 @@ app.get('/api/get_all_capital', function (req, res) {
     var result;
 
     async function handle() {
-        capital.init('127.0.0.1', 'root', 'root', 'stock');
         result = await capital.getAllAcounts(req.query.user_id);
         res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
         res.end(JSON.stringify(result));
@@ -201,7 +195,15 @@ app.get('/api/get_all_capital', function (req, res) {
 
 app.post('/api/search_stock_ambiguous', function (req, res) {
     const data = req.body;
-    search_stock.searchStock(data, function (result) {
+    search_stock.search_stock(data, function (result) {
+        res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
+        res.end(JSON.stringify(result));
+    });
+});
+
+app.post('/api/search_stock_accurate', function (req, res) {
+    const data = req.body;
+    search_stock.stock_detail(data, function (result) {
         res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
         res.end(JSON.stringify(result));
     });
