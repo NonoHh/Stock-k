@@ -4,7 +4,9 @@ function client_request(str, callback) {
     var mess = str;
     const data = JSON.parse(mess.account_id);
     client_request_mid(mess, function (result) {
-        callback(result);
+        callback(result.sort(function (a, b) {
+            return a.date < b.date;
+        }));
     });
 }
 

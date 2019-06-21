@@ -176,6 +176,7 @@ class CapitalBackend {
     }
 
     static addBalance(ID, amount) { //flag = add or subtract
+        console.log(amount);
         return new Promise((resolve, reject) => {
             this.connection.query(`update capital_account set account_balance = account_balance+${amount} where account_id=${ID};`, function (err, results, fields) {
                 if (err) {
@@ -230,6 +231,7 @@ class CapitalBackend {
                         if (results[0]['account_balance'] >= money) {
                             transaction.add_buy(buyer_id, stock_id, price, total, function (success, id) {
                                 if (success) {
+                                    console.log(money);
                                     CapitalBackend.connection.query(`update capital_account set account_balance=account_balance-${money}, frozen=frozen+${money} where account_id= ${buyer_id};`, function (err, results, fields) {
                                         if (err) {
                                             resolve({'code': -1, 'msg': '创建失败'});
@@ -370,7 +372,7 @@ class CapitalBackend {
     }
 
     static deductFrozen(account_id, amount) {
-        var output = new Array()
+        console.log('run');
         return new Promise((resolve, reject) => {
             CapitalBackend.connection.query(`update capital_account set frozen=frozen-${amount} where account_id= ${account_id};`, function (err, results, fields) {
                 if (err || results.length == 0) {

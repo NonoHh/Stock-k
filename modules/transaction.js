@@ -1,3 +1,4 @@
+const capital = require('./CapitalBackend').capital;
 var CronJob = require('cron').CronJob;
 
 //var async = require('async');
@@ -18,13 +19,13 @@ exports.debug_nocheck_stock = debug_nocheck_stock;
 
 Date.prototype.Format = function (fmt) {
     var o = {
-        "M+": this.getMonth() + 1, //月份 
-        "d+": this.getDate(), //日 
-        "H+": this.getHours(), //小时 
-        "m+": this.getMinutes(), //分 
-        "s+": this.getSeconds(), //秒 
-        "q+": Math.floor((this.getMonth() + 3) / 3), //季度 
-        "S": this.getMilliseconds() //毫秒 
+        "M+": this.getMonth() + 1, //月份
+        "d+": this.getDate(), //日
+        "H+": this.getHours(), //小时
+        "m+": this.getMinutes(), //分
+        "s+": this.getSeconds(), //秒
+        "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+        "S": this.getMilliseconds() //毫秒
     };
     if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
     for (var k in o)
@@ -38,8 +39,12 @@ var sell_queue = Array();
 var sell_tmp = Array();
 
 function init(debug) {
-    new CronJob('59 * * * * *', function () {
+    new CronJob('0 0 22 * * *', function () {
         close();
+    }, null, true);
+
+    new CronJob('0 0 8 * * *', function () {
+        ready = 1;
     }, null, true);
 
     center_db.init();
@@ -67,7 +72,7 @@ function end() {
         console.log("[END ERROR] - transaction are not initialized");
         return;
     }
-    center_db.end();
+    // center_db.end();
     ready = 0;
     console.log("transaction are stoped");
 }
@@ -100,12 +105,12 @@ function create_offer_buy(buyer_id, stock_id, price, total) {
     object.buy_id = ++cur_buy_id;
     object.buyer_id = buyer_id;
     object.stock_id = stock_id;
-    object.price = price;
+    object.price = Number(price);
     object.date = new Date().Format("yyyy-MM-dd");
     object.time = new Date().Format("HH:mm:ss");
-    object.total = total;
-    object.rest = total;
-    object.freeze_money = price * total;
+    object.total = Number(total);
+    object.rest = Number(total);
+    object.freeze_money = Number(price) * Number(total);
     dbupdate.insert_buy(object.buy_id, object.buyer_id, object.stock_id, object.price, object.date, object.time, object.total, object.rest, "waiting");
     return object;
 }
@@ -178,6 +183,17 @@ function cancel_sell(sell_id, callback) {
             return element.sell_id == sell_id;
         }).nontradable = 3;
         dbupdate.update_sell_status_byid(sell_id, 'canceled');
+        dbupdate.update_accountstock_byid(sell_queue.find(function (element) {
+                return element.sell_id == sell_id;
+            }).seller_id,
+            sell_queue.find(function (element) {
+                return element.sell_id == sell_id;
+            }).stock_id,
+            0,
+            sell_queue.find(function (element) {
+                return element.sell_id == sell_id;
+            }).rest);
+
         callback(true);
 
     } else
@@ -193,16 +209,15 @@ function create_offer_sell(seller_id, stock_id, price, total) {
     object.sell_id = ++cur_sell_id;
     object.seller_id = seller_id;
     object.stock_id = stock_id;
-    object.price = price;
+    object.price = Number(price);
     object.date = new Date().Format("yyyy-MM-dd");
     object.time = new Date().Format("HH:mm:ss");
-    object.total = total;
-    object.rest = total;
+    object.total = Number(total);
+    object.rest = Number(total);
     dbupdate.insert_sell(object.sell_id, object.seller_id, object.stock_id, object.price, object.date, object.time, object.total, object.rest, "waiting");
     dbupdate.update_accountstock_byid(object.seller_id, object.stock_id, 0, object.total);//freeze
     return object;
 }
-
 
 function sellcmp(a, b) {
     if (a.stock_id == b.stock_id) {//股票序号小在前
@@ -284,15 +299,40 @@ function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bpri
 
     dbupdate.insert_transaction(++cur_trans_id, stock_id, price, trans_num, buy_id, sell_id, date, time);
     dbupdate.update_buy_rest_byid(buy_id, -trans_num);
+    buy_queue[bp].freeze_money -= price * trans_num;
     if (buy_queue[bp].rest == 0) {
         dbupdate.update_buy_status_byid(buy_id, "finish");
+        var result;
+
+        async function handle() {
+            result = await capital.unfreezeBalance(buy_queue[bp].buyer_id, buy_queue[bp].freeze_money);
+        }
+
+        handle();
     }
     dbupdate.update_sell_rest_byid(sell_id, -trans_num);
-    buy_queue[bp].freeze_money -= price * trans_num;
     if (sell_queue[sp].rest == 0) {
         dbupdate.update_sell_status_byid(sell_id, "finish");
     }
-    update.update(stock_id, date, time, price, trans_num)
+    dbupdate.update_accountstock_byid(seller_id, stock_id, -trans_num, -trans_num);
+    dbupdate.update_accountstock_byid(buyer_id, stock_id, trans_num, 0);
+
+    // update.update(stock_id, date, (time + '').substring(0, (time + '').length - 3), price, trans_num);
+    var result;
+    console.log("price");
+    console.log(trans_num);
+    console.log(price);
+
+    async function handle() {
+        result = await capital.deductFrozen(buyer_id, trans_num * price);
+    }
+
+    async function handle1() {
+        result = await capital.addBalance(seller_id, trans_num * price);
+    }
+
+    handle();
+    handle1();
 
     //TODO：limit check
 
@@ -443,19 +483,27 @@ exports.transaction = transaction;
 
 
 function close() {
-    /*
-        console.log("closed");
-        for(var i =0; i<sell_queue.length; i++){
-            if(sell_queue[i].nontradable==0)
-                dbupdate.update_sell_status_byid(sell_queue[i].sell_id,'outdate');
+    console.log("closed");
+    for (var i = 0; i < sell_queue.length; i++) {
+        if (sell_queue[i].nontradable == 0) {
+            dbupdate.update_sell_status_byid(sell_queue[i].sell_id, "outdate");
+            dbupdate.update_accountstock_byid(sell_queue[i].seller_id, sell_queue[i].stock_id, 0, sell_queue[i].rest);
+            // capital.deductFrozen(sell_queue[i].seller_id,)
+            var result;
+
+            async function handle() {
+                result = await capital.unfreezeBalance(sell_queue[i].seller_id, sell_queue[i].freeze_money);
+            }
+
+            handle();
         }
-        for(var i =0; i<buy_queue.length; i++){
-            if(buy_queue[i].nontradable==0)
-                dbupdate.update_buy_status_byid(buy_queue[i].buy_id,'outdate');
-        }
-        update_close()
-        end();
-    */
+    }
+    for (var i = 0; i < buy_queue.length; i++) {
+        if (buy_queue[i].nontradable == 0)
+            dbupdate.update_buy_status_byid(buy_queue[i].buy_id, "outdate");
+    }
+    update.update_close();
+    end();
 };
 
 

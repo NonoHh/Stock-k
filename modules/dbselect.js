@@ -37,10 +37,8 @@ function select_max_trans_id(callback) {
 exports.select_max_trans_id = select_max_trans_id;
 
 function select_account_offer_buy(account_id, callback) {
-    console.log(account_id);
     var select_account_buy_ = "select * from stock.offer_buy natural join stock.stock where buyer_id in " +
         account_id + " order by date desc, time desc";
-    console.log(select_account_buy_);
     connection.query(select_account_buy_, function (err, result) {
         if (err) {
             console.log('[SELECT OFFER_BUY ERROR] - ', err.message);
@@ -53,10 +51,8 @@ function select_account_offer_buy(account_id, callback) {
 exports.select_account_offer_buy = select_account_offer_buy;
 
 function select_account_offer_sell(account_id, callback) {
-    console.log(account_id);
     var select_account_sell_ = "select * from stock.offer_sell natural join stock.stock where seller_id in " +
         account_id + " order by date desc, time desc";
-    console.log(select_account_sell_);
     connection.query(select_account_sell_, function (err, result) {
         if (err) {
             console.log('[SELECT OFFER_SELL ERROR] - ', err.message);
@@ -107,8 +103,6 @@ function limite_check(stock_id) {
                 console.log('[SELECT LIMITE ERROR] - ', err.message);
                 return null;
             }
-
-            // console.log('select_limite: ', stock_id);
             callback(result);
         });
     };

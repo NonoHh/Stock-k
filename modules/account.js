@@ -1,3 +1,5 @@
+const capital = require('./CapitalBackend').capital;
+
 function account_err_account_not_found() {
     return {
         "code": -1,
@@ -554,11 +556,15 @@ function suspend_account(post_data, callback) {
             return new Promise(((resolve, reject) => {
                 Promise.all([suspend_account_update_account_info_0(uid, new_uid), suspend_account_update_account_info_1(uid, new_uid)])
                     .then(() => {
-                        // TODO：调用资金账户的函数
-                        if (capital_account_switch_uid(uid, new_uid))
-                            resolve();
-                        else
-                            reject(account_err_capital_account_not_satisfied());
+                        async function handle() {
+                            var result = await capital.restoreStock(uid, new_uid);
+                            if (result)
+                                resolve();
+                            else
+                                reject(account_err_capital_account_not_satisfied());
+                        }
+
+                        handle();
                     })
                     .then(() => resolve())
                     .catch(err => reject(err))
@@ -641,11 +647,15 @@ function cancel_account(post_data, callback) {
     let data = post_data;
     let uid = data.user_id;
     new Promise((resolve, reject) => {
-        // TODO：调用资金账户模块来检查是否满足注销要求
-        if (capital_account_check_cancelable(uid))
-            resolve();
-        else
-            reject(account_err_capital_account_not_satisfied());
+        async function handle() {
+            var result = await capital.deleteAllAccounts(uid);
+            if (result)
+                resolve();
+            else
+                reject(account_err_capital_account_not_satisfied());
+        }
+
+        handle();
     })
         .then(() => delete_account(uid))
         .then(() => Promise.all([delete_account_info_0(uid), delete_account_info_1(uid)]))
