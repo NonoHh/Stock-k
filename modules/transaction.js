@@ -1,4 +1,5 @@
-const capital = require('./CapitalBackend').capital;
+const capital = require('./CapitalBackend.js');
+console.log(capital);
 var CronJob = require('cron').CronJob;
 
 //var async = require('async');

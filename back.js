@@ -4,12 +4,11 @@ const kline_db = require('./modules/kline_query');
 const search_stock = require('./modules/search_stock');
 const account = require('./modules/account');
 const center = require('./modules/center');
+const capital = require('./modules/CapitalBackend');
 const transaction = require('./modules/transaction');
-const capital = require('./modules/CapitalBackend').capital;
 const express = require('express');
 const app = express();
 const server = require('http').createServer(app);
-
 transaction.init(1);
 capital.init('127.0.0.1', 'root', 'root', 'stock');
 
