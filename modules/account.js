@@ -322,6 +322,7 @@ function admin_login_account(post_data, callback) {
 function admin_get_account_by_name(post_data, callback) {
     let name = post_data.name;
     new Promise((resolve, reject) => {
+        let db = account_database.get_database();
         db.query("SELECT * FROM account WHERE name=?;", [name], (err, rows) => {
             if (err)
                 reject(account_err_syntax_err(err));
@@ -343,20 +344,28 @@ function admin_get_account_by_name(post_data, callback) {
 
 function admin_get_account_by_limit(post_data, callback) {
     let data = post_data;
-    let limit = data.amount;
-    let offset = data.offset;
+    let limit = Number(data.amount);
+    let offset = Number(data.offset);
+
+    console.log(limit);
+    console.log(offset);
+    console.log(data);
     new Promise((resolve, reject) => {
+        let db = account_database.get_database();
         db.query("SELECT * FROM account LIMIT ?, ?;", [offset, limit], (err, rows) => {
-            if (err)
+            if (err) {
+                console.log(err);
                 reject(account_err_syntax_err(err));
-            else {
+            } else {
+                console.log(rows);
                 let return_data = {
                     code: 0,
                     data: []
                 };
-                for (row in rows) {
+                for (var row of rows) {
                     return_data.data.push(account_return_data(row.uid, row.name, row.type, row.acc_type).data);
                 }
+                console.log(return_data);
                 resolve(return_data);
             }
         })
@@ -389,12 +398,12 @@ function change_account(post_data, callback) {
     if (acc_type == 0) {
         db.query("UPDATE account_info_0 SET " +
             "name=?," +
-            "ID=?" +
-            "home_address=?" +
-            "job=?" +
-            "education_backgroud=?" +
-            "company_address=?" +
-            "phone=?" +
+            "ID=?," +
+            "home_address=?," +
+            "job=?," +
+            "education_background=?," +
+            "company_address=?," +
+            "phone=?," +
             "agent_ID=?" +
             "where uid=?;", [
             info.name,
@@ -417,13 +426,13 @@ function change_account(post_data, callback) {
         db.query("UPDATE account_info_1 SET " +
             "corporate_number=?," +
             "license_number=?," +
-            "representative_ID=?" +
-            "representative_name=?" +
-            "representative_phone=?" +
-            "representative_address=?" +
-            "operator_name=?" +
-            "operator_ID=?" +
-            "operator_phone=?" +
+            "representative_ID=?," +
+            "representative_name=?," +
+            "representative_phone=?," +
+            "representative_address=?," +
+            "operator_name=?," +
+            "operator_ID=?," +
+            "operator_phone=?," +
             "operator_address=?" +
             "where uid=?;", [
             info.corporate_number,
