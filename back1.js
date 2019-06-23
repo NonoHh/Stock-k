@@ -258,7 +258,6 @@ server.listen(8088, function () {
     console.log("Listen on port 8088");
 });
 
-
 setTimeout(function(){transaction.add_buy(1000001, 600001, 28, 80, function(a){buy_id=a; console.log(a);});},1000);
 setTimeout(function(){transaction.add_sell(1000056, 600001, 19, 45, function(a){});},2000);
 setTimeout(function(){transaction.cancel_buy(buy_id, function(a){});},3000);
