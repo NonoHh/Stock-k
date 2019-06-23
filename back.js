@@ -16,6 +16,12 @@ var multipart = require('connect-multiparty');
 var multipartMiddleware = multipart();
 app.use(multipartMiddleware);
 
+app.all('*', function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Content-Type", "text/plain");
+    next();
+});
+
 app.get('/kline/get_rt', function (req, res) {
     const json = URL.parse(req.url, true).query;
     kline_db.selectRt(json, function (result) {
@@ -194,8 +200,8 @@ app.get('/api/get_all_capital', function (req, res) {
 app.post('/api/search_stock_ambiguous', function (req, res) {
     const data = req.body;
     search_stock.search_stock(data, function (result) {
-        res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
-        res.end(JSON.stringify(result));
+        // res.writeHead(200, {'Content-Type': 'text/plain', 'Access-Control-Allow-Origin': '*'});
+        return res.end(JSON.stringify(result));
     });
 });
 

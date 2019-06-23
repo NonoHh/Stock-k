@@ -318,7 +318,7 @@ function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bpri
     dbupdate.update_accountstock_byid(seller_id, stock_id, -trans_num, -trans_num);
     dbupdate.update_accountstock_byid(buyer_id, stock_id, trans_num, 0);
 
-    // update.update(stock_id, date, (time + '').substring(0, (time + '').length - 3), price, trans_num);
+    update.update(stock_id, date, (time + '').substring(0, (time + '').length - 3), price, trans_num);
     var result;
     console.log("price");
     console.log(trans_num);

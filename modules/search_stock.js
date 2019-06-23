@@ -18,7 +18,7 @@ function searchStock(json, callback) {
                 result.code = 0;
                 result.data = {};
                 result.data.stock = stocks;
-                callback(result);
+                return callback(result);
             }
             num = rows.length;
             if (num == 0) {
@@ -50,7 +50,7 @@ function searchStock(json, callback) {
                         result.code = 0;
                         result.data = {};
                         result.data.stock = stocks;
-                        callback(result);
+                        return callback(result);
                     }
                     let stocks = [];
                     let arr = {};
@@ -71,7 +71,7 @@ function searchStock(json, callback) {
                             result.code = 0;
                             result.data = {};
                             result.data.stock = stocks;
-                            callback(result);
+                            return callback(result);
                         } else {
                             arr.highest_buy_order = rows2[0]['highest_buy_order'];
                             arr.lowest_sell_order = rows2[0]['lowest_sell_order'];
@@ -107,7 +107,7 @@ function searchStock(json, callback) {
                 result.code = 0;
                 result.data = {};
                 result.data.stock = stocks;
-                callback(result);
+                return callback(result);
             }
 
             if (num == 0) {
@@ -142,7 +142,7 @@ function searchStock(json, callback) {
                         result.code = 0;
                         result.data = {};
                         result.data.stock = stocks;
-                        callback(result);
+                        return callback(result);
                     }
                     let arr = {};
                     arr.id = stock_id;
@@ -223,7 +223,9 @@ const selectWeekMonth = (num, callback) => {
 function search_stock(json_in, callback) {
     searchStock(json_in, result => {
         if (result.data.stock.length == num || result.data.stock.length == 0) {
-            callback(result);
+            return callback(result);
+        } else {
+            return callback({code: 0, data: {stock: []}});
         }
     });
 }
