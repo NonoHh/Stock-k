@@ -94,18 +94,15 @@ function stock_check(account_id, stock_id) {
 
 exports.stock_check = stock_check;
 
-function limite_check(stock_id) {
-    this.select = function (callback) {
-        var select_limite_ = "SELECT * FROM limite WHERE stock_id = ?";
-        var select_limite_p = [stock_id];
-        connection.query(select_limite_, select_limite_p, function (err, result) {
-            if (err) {
-                console.log('[SELECT LIMITE ERROR] - ', err.message);
-                return null;
-            }
+function limite_check(stock_id, callback) {
+    var select_limite_ = "SELECT * FROM stock_status WHERE stock_id = ?";
+    var select_limite_p = [stock_id];
+    connection.query(select_limite_, select_limite_p, function (err, result) {
+        if (err) {
+            console.log('[SELECT LIMITE ERROR] - ', err.message);
+        } else
             callback(result);
-        });
-    };
+    });
 }
 
 exports.limite_check = limite_check;

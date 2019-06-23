@@ -26,7 +26,8 @@ function get_close_price(stock, date, last) {
 }
 
 function get_lastday(stock, date) {
-    var sql = 'SELECT * FROM `' + stock + '`' + ' WHERE date = \'' + date + '\' - INTERVAL 1 DAY';
+    var sql = 'SELECT * FROM `' + stock + '`' + ' where date in (select max(date) from `' + stock + '`' +
+        ' where date != \'' + date + '\')';
     var connection = mysql.createConnection({
         host: con_host,
         user: con_user,
@@ -46,7 +47,9 @@ function get_lastday(stock, date) {
 }
 
 function insert_getsum(stock, date, price, volume) {
-    var selectSql = 'SELECT FROM `' + stock + '` WHERE date = \'' + date + '\' - INTERVAL 1 DAY';
+    var selectSql = 'SELECT * FROM `' + stock + '`' + ' where date in (select max(date) from `' + stock + '`' +
+        ' where date != \'' + date + '\')';
+    console.log(selectSql);
     var connection = mysql.createConnection({
         host: con_host,
         user: con_user,
@@ -60,15 +63,15 @@ function insert_getsum(stock, date, price, volume) {
             connection.end();
             return;
         }
-        var sum = result[0].total_volume;
+        var sum = result[0].volume;
         insert_open(stock, date, price, volume, sum);
         connection.end();
     });
 }
 
 function insert_open(stock, date, price, volume, sum) {
-    var addSql = 'INSERT INTO `' + stock + '` VALUES(?,?,0,?,?,?,?,0,0,?,0,0,0,0,0,?)';
-    var addSqlParams = [date, price, price, price, volume, volume * price, volume / sum, sum];
+    var addSql = 'INSERT INTO `' + stock + '` VALUES(?,?,0,?,?,?,?,0,0,?,0,0,0,0,0)';
+    var addSqlParams = [date, price, price, price, volume, volume * price, volume / sum];
     var connection = mysql.createConnection({
         host: con_host,
         user: con_user,
@@ -78,6 +81,7 @@ function insert_open(stock, date, price, volume, sum) {
     connection.connect();
     connection.query(addSql, addSqlParams, function (err, result) {
         if (err) {
+            console.log(err);
             console.log('[INSERT ERROR in insert_open] - ', err.message);
             connection.end();
             return;
@@ -118,20 +122,37 @@ function update_tot(stock, date, price, volume, result) {
     var newAmount = volume * price + result[0].amount;
     updateSql += 'amount = ' + newAmount;
 
-    updateSql += ', ';
-    var newexchage_rate = newVolume / result[0].total_volume;
-    updateSql += 'exchange_rate = ' + newexchage_rate;
+    var connection1 = mysql.createConnection({
+        host: con_host,
+        user: con_user,
+        password: con_pass,
+        database: con_db,
+    });
+    connection1.connect();
+    var volume_sql = 'select * from stock.stock where stock_id = \'' + stock + '\'';
 
-    updateSql += ' WHERE date = \'' + date + '\'';
-    // console.log(updateSql);
-    connection.query(updateSql, function (err, result) {
+    connection.query(volume_sql, function (err, rows) {
         if (err) {
             console.log('[UPDATE ERROR in update_tot] - ', err.message);
             connection.end();
             return;
         }
-        connection.end();
+        updateSql += ', ';
+        var newexchage_rate = newVolume / rows[0].stock_sum;
+        updateSql += 'exchange_rate = ' + newexchage_rate;
+
+        updateSql += ' WHERE date = \'' + date + '\'';
+        // console.log(updateSql);
+        connection.query(updateSql, function (err, result) {
+            if (err) {
+                console.log('[UPDATE ERROR in update_tot] - ', err.message);
+                connection.end();
+                return;
+            }
+            connection.end();
+        });
     });
+
 }
 
 function update_close_db(stock, date, price, result) {

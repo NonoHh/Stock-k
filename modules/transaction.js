@@ -25,7 +25,7 @@ Date.prototype.Format = function (fmt) {
         "H+": this.getHours(), //小时
         "m+": this.getMinutes(), //分
         "s+": this.getSeconds(), //秒
-        "q+": Math.floor((this.getMonth() + 3) / 3), //季度
+        "q+": Math.floor((this.getMonth() + 3) / 3),  //季度
         "S": this.getMilliseconds() //毫秒
     };
     if (/(y+)/.test(fmt)) fmt = fmt.replace(RegExp.$1, (this.getFullYear() + "").substr(4 - RegExp.$1.length));
@@ -196,6 +196,7 @@ function cancel_sell(sell_id, callback) {
             }).rest);
 
         callback(true);
+        console.log(sell_id, "canceled");
 
     } else
         callback(false);
@@ -290,11 +291,8 @@ function add_sell(seller_id, stock_id, price, total, callback) {
 
 exports.add_sell = add_sell;
 
-//transaction
-function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bprice, sprice, trans_num, bp, sp) {//出价最高者可能由于涨停永远买不到股票， 可以考虑修改成交价计算方式改善
+function make_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, price, trans_num, bp, sp) {
     if (trans_num <= 0) return;
-    //TODO dubug
-    var price = (bprice + sprice) / 2;
     var date = new Date().Format("yyyy-MM-dd");
     var time = new Date().Format("HH:mm:ss");
 
@@ -311,6 +309,7 @@ function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bpri
 
         handle();
     }
+
     dbupdate.update_sell_rest_byid(sell_id, -trans_num);
     if (sell_queue[sp].rest == 0) {
         dbupdate.update_sell_status_byid(sell_id, "finish");
@@ -318,11 +317,9 @@ function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bpri
     dbupdate.update_accountstock_byid(seller_id, stock_id, -trans_num, -trans_num);
     dbupdate.update_accountstock_byid(buyer_id, stock_id, trans_num, 0);
 
+    //TODO
     update.update(stock_id, date, (time + '').substring(0, (time + '').length - 3), price, trans_num);
     var result;
-    console.log("price");
-    console.log(trans_num);
-    console.log(price);
 
     async function handle() {
         result = await capital.deductFrozen(buyer_id, trans_num * price);
@@ -334,44 +331,33 @@ function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bpri
 
     handle();
     handle1();
+}
 
-    //TODO：limit check
+function cancel_transaction(stock_id, trans_num, bp, sp) {
+    if (buy_queue[bp].nontradable == 1) buy_queue[bp].nontradable = 0;
+    if (sell_queue[sp].nontradable == 1) sell_queue[sp].nontradable = 0;
+    buy_queue[bp].rest += trans_num;
+    sell_queue[sp].rest += trans_num;
+}
 
-    // var mqt = new dbselect.limite_check(stock_id);
-    // mqt.select(processdata);
-    //
-    // function processdata(result) {
-    //     var price = (bprice + sprice) / 2;
-    //     var date = new Date().Format("yyyy-MM-dd");
-    //     var time = new Date().Format("HH:mm:ss");
 
-    //     dbupdate.insert_transaction(++cur_trans_id, stock_id, price, trans_num, buy_id, sell_id, date, time);
-    //     dbupdate.update_buy_rest_byid(buy_id, -trans_num);
-    //     if(buy_queue[bp].rest==0){
-    //         dbupdate.update_buy_status_byid(buy_id, "finish");
-    //     }
-    //     dbupdate.update_sell_rest_byid(sell_id, -trans_num, -price*trans_num);
-    //     if(sell_queue[sp].rest==0){
-    //         dbupdate.update_sell_status_byid(sell_id, "finish");
-    //     }
-    //     update.update(stock_id, date, time, price, trans_num)
-    //     } else {
-    //         console.log("make transaction failed, price ", price, " of stock ", stock_id, " is limited");
-    //         if (buy_queue[bp].nontradable == 1) buy_queue[bp].nontradable = 0;
-    //         if (sell_queue[sp].nontradable == 1) sell_queue[sp].nontradable = 0;
-    //         buy_queue[bp].rest += trans_num;
-    //         sell_queue[sp].rest += trans_num;
-    //     }
-    //
-    // }
+//transaction
+function create_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, bprice, sprice, trans_num, bp, sp) {//出价最高者可能由于涨停永远买不到股票， 可以考虑修改成交价计算方式改善
+    dbselect.limite_check(stock_id, function (result) {
+        var price = (bprice + sprice) / 2;
+        if ((result.length == 0) || (result[0].trade && result[0].up_price >= price && result[0].down_price <= price)) {
+            make_transaction(stock_id, buy_id, buyer_id, sell_id, seller_id, price, trans_num, bp, sp);
+        } else {
+            console.log("make transaction failed, price ", price, " of stock ", stock_id, " is limited or the stock is none tradable");
+            cancel_transaction(stock_id, trans_num, bp, sp);
+        }
+    });
 
 }
 
 function transaction_one(buy_top, buy_bottom, sell_top, sell_bottom) {
-    console.log('1');
     if (buy_top >= buy_bottom || sell_top >= sell_bottom)
         return;
-    console.log('2');
     var trans_num = 0;
     for (var i = buy_top; i < buy_bottom; i++) {
         if (buy_queue.length == 0 || buy_queue[i].nontradable)
@@ -412,77 +398,6 @@ function transaction_ones() {
     }
 }
 
-/*
-function transaction() {
-    if (ready == 0) {
-        console.log("[TRANSACTION ERROR] - transaction are not initialized");
-        return;
-    } else {
-        async.series({
-            one: function (done) {
-                buy_queue.push.apply(buy_queue, buy_tmp);
-                sell_queue.push.apply(sell_queue, sell_tmp);
-                //console.log("#1",buy_queue);
-                //console.log("#1",sell_queue);
-                done(null, 'one');
-            },
-            two: function (done) {
-                buy_tmp.splice(0, buy_tmp.length);
-                sell_tmp.splice(0, sell_tmp.length);
-                //console.log("#2",buy_tmp);
-                //console.log("#2",sell_tmp);
-                done(null, 'two');
-            },
-            three: function (done) {
-                buy_queue.sort(function (a, b) {
-                    if (a.stock_id == b.stock_id) {//股票序号小在前
-                        if (a.price == b.price) {//价格高在前
-                            return true;//插入时已经按时间排序，早在前
-                        } else if (a.price < b.price) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else if (a.stock_id > b.stock_id) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
-                sell_queue.sort(function (a, b) {
-                    if (a.stock_id == b.stock_id) {//股票序号小在前
-                        if (a.price == b.price) {//价格低在前
-                            return true;//插入已经按时间排序，早在前
-                        } else if (a.price > b.price) {
-                            return true;
-                        } else {
-                            return false;
-                        }
-                    } else if (a.stock_id > b.stock_id) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                });
-                //console.log("#3",buy_queue);
-                //console.log("#3",sell_queue);
-                done(null, 'three');
-            },
-            four: function (done) {
-                transaction_one();
-                //console.log("#4",buy_queue);
-                //console.log("#4",sell_queue);
-                done(null, 'four');
-            }
-        }, function (error, result) {
-        })
-    }
-}
-
-exports.transaction = transaction;
-*/
-
-
 function close() {
     console.log("closed");
     for (var i = 0; i < sell_queue.length; i++) {
@@ -506,7 +421,3 @@ function close() {
     update.update_close();
     end();
 };
-
-
-
-
